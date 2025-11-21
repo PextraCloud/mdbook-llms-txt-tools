@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use mdbook::book::BookItem;
-use mdbook::renderer::RenderContext;
+use mdbook_renderer::book::BookItem;
+use mdbook_renderer::RenderContext;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -53,17 +53,15 @@ pub fn render_llm_txt(ctx: &RenderContext) -> anyhow::Result<String> {
     let book = &ctx.book;
 
     // Get document_root_uri from config
-    let document_root_uri = match ctx
+    let document_root_uri = ctx
         .config
-        .get("output.llms-txt.document_root_uri")
-        .and_then(|v| v.as_str())
-    {
-        Some(uri) => uri,
-        None => {
+        .get::<String>("output.llms-txt.document_root_uri")
+        .ok()   // Result<T, E> -> Option<T>
+        .flatten()      // Option<Option<V>> -> Option<V>
+        .unwrap_or_else(|| {
             log::warn!("document_root_uri is not set in book.toml. Links will be generated without base URL.");
-            ""
-        }
-    };
+            String::new()
+        });
 
     // Use the title from book.toml
     let title = ctx
@@ -81,7 +79,7 @@ pub fn render_llm_txt(ctx: &RenderContext) -> anyhow::Result<String> {
     }
 
     // Process chapters
-    for item in &book.sections {
+    for item in &book.items {
         match item {
             BookItem::Chapter(chapter) => {
                 // Add section name

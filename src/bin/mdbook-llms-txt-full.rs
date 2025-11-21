@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use mdbook::book::BookItem;
-use mdbook::renderer::RenderContext;
+use mdbook_renderer::book::BookItem;
+use mdbook_renderer::RenderContext;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -65,7 +65,7 @@ pub fn render_llm_txt_full(ctx: &RenderContext) -> anyhow::Result<String> {
     }
 
     // Process chapters
-    for item in &book.sections {
+    for item in &book.items {
         process_book_item(item, &mut output);
     }
 
